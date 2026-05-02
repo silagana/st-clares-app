@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+data/instituto.db
+data/backups/*
+data/uploads/*
+!data/backups/.gitkeep
+!data/uploads/.gitkeep
+.env
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
