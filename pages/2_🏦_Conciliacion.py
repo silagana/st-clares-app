@@ -197,7 +197,11 @@ with tab_conc:
     with col_sel:
         st.subheader(f"Movimientos pendientes de conciliar ({len(movs)})")
         opts = {
-            f"[{m['Fecha']}] {m['Pagador'][:22]} | {m['Monto']} ({m['Estado']})": m["id"]
+            (
+                f"[{m['Fecha']}] {m['Pagador'][:20]}"
+                + (f" | CUIT {m['CUIT']}" if m['CUIT'] != "—" else "")
+                + f" | {m['Monto']}"
+            ): m["id"]
             for m in movs
         }
         sel_label = st.selectbox(
@@ -221,21 +225,27 @@ with tab_conc:
                     "pagador": mov.nombre_pagador_detectado or "—",
                     "cuit": mov.cuit_detectado or "—",
                     "ref": mov.referencia_detectada or "—",
+                    "tipo": (mov.tipo_movimiento or "—")[:50],
+                    "subtipo": mov.subtipo or "—",
                     "estado": mov.estado.value,
                     "concepto": mov.concepto_raw or "",
                 }
                 sug = sugerir_conciliacion(s, mov_id)
 
-            ca, cb, cc = st.columns(3)
+            ca, cb, cc, cd = st.columns(4)
             ca.metric("Monto", mdat["monto"])
             cb.metric("Fecha", mdat["fecha"])
-            cc.metric("Estado", mdat["estado"])
-            st.caption(
-                f"**Pagador:** {mdat['pagador']}  ·  "
-                f"**CUIT:** {mdat['cuit']}  ·  "
-                f"**Ref:** {mdat['ref']}"
-            )
-            with st.expander("Concepto raw"):
+            cc.metric("CUIT", mdat["cuit"])
+            cd.metric("Estado", mdat["estado"])
+
+            da, db = st.columns(2)
+            da.markdown(f"**Pagador:** {mdat['pagador']}")
+            db.markdown(f"**Referencia:** {mdat['ref']}")
+            ea, eb = st.columns(2)
+            ea.markdown(f"**Tipo mov.:** {mdat['tipo']}")
+            eb.markdown(f"**Subtipo:** {mdat['subtipo']}")
+
+            with st.expander("📄 Concepto completo del extracto"):
                 st.code(mdat["concepto"])
 
             st.divider()
@@ -419,6 +429,25 @@ with tab_conc:
 with tab_ok:
     movs_ok = _mov_rows([EstadoMovimientoEnum.conciliado])
 
+    _METODO_LABELS = {
+        "batch_alto":     "🟢 Auto-CUIT",
+        "manual":         "🟡 Confirmado",
+        "manual_override":"🔵 Manual",
+        "—":              "—",
+    }
+
+    with st.expander("📖 Glosario — métodos de conciliación"):
+        st.markdown("""
+| Símbolo | Método | Descripción |
+|---------|--------|-------------|
+| 🟢 **Auto-CUIT** | `batch_alto` | El CUIT del pagador coincide exactamente con un referente registrado. Confianza ALTA. Aprobado en lote sin intervención. |
+| 🟡 **Confirmado** | `manual` | El sistema sugirió un alumno (por CUIT, alias o nombre fuzzy) y el usuario lo confirmó manualmente. |
+| 🔵 **Manual** | `manual_override` | El usuario ignoró la sugerencia automática y seleccionó el alumno a mano. |
+| 🟠 **Alias** | interno | El nombre del pagador coincide con un alias guardado previamente (≥85% similitud). Confianza ALTA. |
+| 🟡 **Fuzzy nombre** | interno | El nombre del pagador se parece al nombre del referente (≥80% similitud). Confianza MEDIA. |
+| 🔴 **Fuzzy referencia** | interno | La referencia del concepto bancario se parece al nombre del alumno (≥75% similitud). Confianza BAJA. |
+        """)
+
     if not movs_ok:
         st.info("Sin movimientos conciliados aún.")
     else:
@@ -432,7 +461,7 @@ with tab_ok:
             c2.write(m["Pagador"])
             c3.write(m["Alumno"])
             c4.write(m["Monto"])
-            c5.write(m["metodo_conc"])
+            c5.write(_METODO_LABELS.get(m["metodo_conc"], m["metodo_conc"]))
             if c6.button("↩️", key=f"rev_{m['id']}", help="Revertir conciliación"):
                 with get_session() as s:
                     revertir_conciliacion(s, m["id"])
