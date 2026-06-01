@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from logging.config import fileConfig
@@ -8,10 +9,18 @@ from alembic import context
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from db.models import Base
-from db.session import DB_PATH
 
 config = context.config
-config.set_main_option("sqlalchemy.url", f"sqlite:///{DB_PATH}")
+
+_db_url = os.getenv("DATABASE_URL", "")
+if _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+if not _db_url:
+    from db.session import DB_PATH
+    _db_url = f"sqlite:///{DB_PATH}"
+
+config.set_main_option("sqlalchemy.url", _db_url)
+_is_sqlite = _db_url.startswith("sqlite")
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -26,7 +35,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        render_as_batch=True,  # necesario para SQLite ALTER TABLE
+        render_as_batch=_is_sqlite,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -42,7 +51,7 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            render_as_batch=True,  # necesario para SQLite ALTER TABLE
+            render_as_batch=_is_sqlite,
         )
         with context.begin_transaction():
             context.run_migrations()
