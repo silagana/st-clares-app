@@ -180,7 +180,7 @@ with tab_conc:
     col_sel, col_det = st.columns([2, 3])
 
     with col_sel:
-        st.subheader(f"Movimientos ({len(movs)})")
+        st.subheader(f"Movimientos pendientes de conciliar ({len(movs)})")
         opts = {
             f"[{m['Fecha']}] {m['Pagador'][:22]} | {m['Monto']} ({m['Estado']})": m["id"]
             for m in movs

@@ -13,6 +13,10 @@ from utils.formatters import parse_importe_ar
 
 # ── Extractors ─────────────────────────────────────────────────────────────
 
+def _strip_nul(s: str | None) -> str | None:
+    return s.replace('\x00', '') if s else s
+
+
 def _extract_tipo(concepto: str) -> str:
     """Extracts movement type prefix (everything before pagador marker)."""
     # Split before "De " or "Id debin" markers
@@ -84,7 +88,7 @@ def parse_tsv(content: bytes) -> list[dict]:
 
     for raw in reader:
         fecha_str = (raw.get("Fecha") or "").strip()
-        concepto_raw = (raw.get("Concepto") or "").strip()
+        concepto_raw = _strip_nul((raw.get("Concepto") or "").strip())
         importe_str = (raw.get("Importe") or "").strip()
 
         if not fecha_str or not concepto_raw or not importe_str:
@@ -106,8 +110,10 @@ def parse_tsv(content: bytes) -> list[dict]:
             continue
 
         c = concepto_raw.lower()
-        tipo = _extract_tipo(c)
+        tipo = _strip_nul(_extract_tipo(c))
         nombre, referencia, subtipo = _extract_nombre_ref_subtipo(c)
+        nombre = _strip_nul(nombre)
+        referencia = _strip_nul(referencia)
         cuit = _extract_cuit(c)
 
         # SHA1 of raw fields for idempotency
@@ -125,7 +131,7 @@ def parse_tsv(content: bytes) -> list[dict]:
             "subtipo": subtipo,
             "cuit_detectado": cuit,
             "hash_unico": hash_unico,
-            "is_proveedor_candidate": "pago a proveedores" in tipo,
+            "is_proveedor_candidate": "pago a proveedores" in (tipo or ""),
         })
 
     return rows
@@ -215,10 +221,12 @@ def _pdf_row_amounts(bucket: list) -> tuple[Decimal | None, Decimal | None]:
 
 def _pdf_finalize(pending: dict, rows: list) -> None:
     """Build final row dict from pending credit and append to rows."""
-    concepto_raw = pending['concepto_raw']
+    concepto_raw = _strip_nul(pending['concepto_raw'])
     c = concepto_raw.lower()
-    tipo = _extract_tipo(c)
+    tipo = _strip_nul(_extract_tipo(c))
     nombre, referencia, subtipo = _extract_nombre_ref_subtipo(c)
+    nombre = _strip_nul(nombre)
+    referencia = _strip_nul(referencia)
     cuit = _extract_cuit(c)
     is_prov = bool(_PROVEEDOR_CREDITO.search(concepto_raw))
     hash_unico = hashlib.sha1(

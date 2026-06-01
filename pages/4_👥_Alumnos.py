@@ -7,7 +7,7 @@ import streamlit as st
 
 from db.models import (
     AliasCobroAlumno, Alumno, Curso, EstadoAlumnoEnum, EstadoCuotaEnum,
-    Inscripcion, ReferentePago, Sede,
+    Imputacion, Inscripcion, Pago, ReferentePago, Sede,
 )
 from db.session import get_session
 from services.enrollment import (
@@ -136,6 +136,25 @@ def load_alumno_detail(alumno_id):
                     "Estado": c.estado.value,
                     "Días atraso": dias_atraso,
                 })
+        all_cuota_ids = [c["_id"] for c in cuotas_ec]
+        pagos_ec = []
+        if all_cuota_ids:
+            pagos_q = (
+                s.query(Pago)
+                .join(Imputacion, Pago.id == Imputacion.pago_id)
+                .filter(Imputacion.cuota_id.in_(all_cuota_ids))
+                .distinct()
+                .order_by(Pago.fecha.asc(), Pago.id.asc())
+                .all()
+            )
+            for pago in pagos_q:
+                pagos_ec.append({
+                    "Fecha": fmt_fecha(pago.fecha),
+                    "Monto": fmt_moneda(pago.monto),
+                    "Forma": pago.medio.value,
+                    "_monto_float": float(pago.monto),
+                })
+
         return {
             "id": r.id,
             "nombre": r.nombre,
@@ -152,6 +171,7 @@ def load_alumno_detail(alumno_id):
             "aliases": aliases,
             "inscripciones": inscripciones,
             "cuotas_ec": cuotas_ec,
+            "pagos_ec": pagos_ec,
         }
 
 
@@ -183,8 +203,13 @@ if alumnos:
         st.dataframe(df, use_container_width=True, hide_index=True)
     names = [a["Alumno"] for a in alumnos]
     ids = [a["id"] for a in alumnos]
-    sel = st.selectbox("Seleccionar alumno:", ["— seleccionar —"] + names)
-    if sel != "— seleccionar —":
+    sel = st.selectbox(
+        "Seleccionar alumno:",
+        names,
+        index=None,
+        placeholder="Escribir para buscar o seleccionar de la lista...",
+    )
+    if sel is not None:
         new_al_id = ids[names.index(sel)]
         if new_al_id != st.session_state.al_id:
             st.session_state.al_id = new_al_id
@@ -564,6 +589,21 @@ with tab_cuenta:
                 pd.DataFrame([{k: c[k] for k in _display_keys} for c in cuotas_ec]),
                 use_container_width=True, hide_index=True,
             )
+
+            # ── Pagos recibidos ────────────────────────────────────────────
+            pagos_ec = detail.get("pagos_ec", [])
+            if pagos_ec:
+                st.divider()
+                st.subheader("Pagos recibidos")
+                total_cobrado = sum(p["_monto_float"] for p in pagos_ec)
+                st.dataframe(
+                    pd.DataFrame([{k: v for k, v in p.items() if not k.startswith("_")} for p in pagos_ec]),
+                    use_container_width=True, hide_index=True,
+                )
+                pc1, pc2, pc3 = st.columns(3)
+                pc1.metric("Total cobrado", fmt_moneda(total_cobrado))
+                pc2.metric("Total adeudado", fmt_moneda(deuda))
+                pc3.metric("Saldo pendiente", fmt_moneda(deuda))
 
             # ── Cambio masivo de monto ─────────────────────────────────────
             with st.expander("💰 Cambiar monto a todas las cuotas impagas"):
