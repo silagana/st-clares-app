@@ -5,7 +5,7 @@ enableXsrfProtection = false
 
 [theme]
 # St. Clare's Language Center brand colors
-primaryColor = "#3DAA86"         # Teal-green del logo (adaptado para fondo oscuro)
+primaryColor = "#3BAA86"         # Teal-green del logo St. Clare's
 backgroundColor = "#0B1512"      # Negro con tinte teal (como el fondo del logo)
 secondaryBackgroundColor = "#122820"  # Sidebar/panels - teal oscuro
 textColor = "#F0F5F3"            # Blanco cálido

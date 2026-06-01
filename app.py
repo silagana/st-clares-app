@@ -30,32 +30,24 @@ def run_migrations():
 
 run_migrations()
 
-# ── Brand header ───────────────────────────────────────────────────────────────
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #122820 0%, #1a3d32 100%);
-    border-left: 4px solid #3DAA86;
-    padding: 1.2rem 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-">
-    <div style="display:flex; align-items:center; gap:1rem;">
-        <div>
-            <span style="font-size:1.9rem; font-weight:700; color:#3DAA86; letter-spacing:-0.5px;">
-                St. Clare's
-            </span>
-            <span style="font-size:1.1rem; color:#8BC4B2; margin-left:0.4rem; font-weight:300;">
-                language center
-            </span>
-            <br>
-            <span style="font-size:0.8rem; color:#6A9E90; letter-spacing:2px; text-transform:uppercase;">
-                Sistema de gestión interna
-            </span>
-        </div>
+# ── Logo en sidebar ────────────────────────────────────────────────────────────
+st.logo("assets/logo.png", link="https://stclarescenter.com.ar")
+
+# ── Brand header (home) ────────────────────────────────────────────────────────
+col_logo, col_title = st.columns([1, 4], vertical_alignment="center")
+with col_logo:
+    st.image("assets/logo.png", width=180)
+with col_title:
+    st.markdown("""
+<div style="border-left: 3px solid #3DAA86; padding-left: 1rem;">
+    <div style="font-size:1.4rem; font-weight:600; color:#3DAA86;">Sistema de gestión interna</div>
+    <div style="font-size:0.85rem; color:#8BC4B2; letter-spacing:1px; text-transform:uppercase; margin-top:2px;">
+        Inglés · Buenos Aires
     </div>
 </div>
 """, unsafe_allow_html=True)
 
+st.divider()
 st.caption("Usá el menú lateral para navegar entre secciones.")
 
 col1, col2, col3 = st.columns(3)
