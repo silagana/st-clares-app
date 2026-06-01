@@ -224,6 +224,7 @@ with tab_ec:
                 )
                 al_data = {
                     "nombre": f"{al.apellido}, {al.nombre}",
+                    "apellido": al.apellido,
                     "dni": al.dni,
                     "sede": al.sede.nombre if al.sede else "—",
                     "telefono": al.telefono or "—",
@@ -318,7 +319,7 @@ with tab_ec:
             doc.build(story)
             buf_pdf.seek(0)
 
-            fname_pdf = f"estado_cuenta_{al.apellido.lower()}_{al.dni}_{HOY.isoformat()}.pdf"
+            fname_pdf = f"estado_cuenta_{al_data['apellido'].lower()}_{al_data['dni']}_{HOY.isoformat()}.pdf"
             st.download_button(
                 "⬇️ Descargar PDF",
                 data=buf_pdf,
