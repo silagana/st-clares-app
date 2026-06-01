@@ -148,10 +148,14 @@ def load_alumno_detail(alumno_id):
                 .all()
             )
             for pago in pagos_q:
+                pagador = "—"
+                if pago.medio.value == "transferencia" and pago.movimiento:
+                    pagador = pago.movimiento.nombre_pagador_detectado or "—"
                 pagos_ec.append({
                     "Fecha": fmt_fecha(pago.fecha),
                     "Monto": fmt_moneda(pago.monto),
                     "Forma": pago.medio.value,
+                    "Pagador": pagador,
                     "_monto_float": float(pago.monto),
                 })
 
