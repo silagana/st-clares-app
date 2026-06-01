@@ -13,7 +13,7 @@ DATA_DIR.mkdir(exist_ok=True)
 (DATA_DIR / "backups").mkdir(exist_ok=True)
 
 st.set_page_config(
-    page_title="Instituto — Conciliación",
+    page_title="St. Clare's App",
     page_icon="🏫",
     layout="wide",
 )
@@ -30,7 +30,7 @@ def run_migrations():
 
 run_migrations()
 
-st.title("🏫 Sistema de Conciliación Bancaria")
+st.title("🏫 St. Clare's App")
 st.caption("Usá el menú lateral para navegar entre secciones.")
 
 col1, col2, col3 = st.columns(3)
