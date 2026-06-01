@@ -30,7 +30,32 @@ def run_migrations():
 
 run_migrations()
 
-st.title("🏫 St. Clare's App")
+# ── Brand header ───────────────────────────────────────────────────────────────
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #122820 0%, #1a3d32 100%);
+    border-left: 4px solid #3DAA86;
+    padding: 1.2rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+">
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <div>
+            <span style="font-size:1.9rem; font-weight:700; color:#3DAA86; letter-spacing:-0.5px;">
+                St. Clare's
+            </span>
+            <span style="font-size:1.1rem; color:#8BC4B2; margin-left:0.4rem; font-weight:300;">
+                language center
+            </span>
+            <br>
+            <span style="font-size:0.8rem; color:#6A9E90; letter-spacing:2px; text-transform:uppercase;">
+                Sistema de gestión interna
+            </span>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 st.caption("Usá el menú lateral para navegar entre secciones.")
 
 col1, col2, col3 = st.columns(3)
