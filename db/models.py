@@ -128,7 +128,7 @@ class ReferentePago(Base):
     id = Column(Integer, primary_key=True)
     alumno_id = Column(Integer, ForeignKey("alumno.id"), nullable=False)
     nombre_completo = Column(String(160), nullable=False)
-    cuit_cuil = Column(String(13), nullable=False)
+    cuit_cuil = Column(String(20), nullable=False)
     telefono = Column(String(30))
     vinculo = Column(Enum(VinculoEnum), nullable=False)
     es_default = Column(Boolean, nullable=False, default=False)
@@ -180,7 +180,7 @@ class MovimientoBancario(Base):
     fecha = Column(Date, nullable=False)
     concepto_raw = Column(Text, nullable=False)
     importe = Column(Numeric(14, 2), nullable=False)
-    cuit_detectado = Column(String(13))
+    cuit_detectado = Column(String(20))
     nombre_pagador_detectado = Column(String(160))
     referencia_detectada = Column(String(160))
     subtipo = Column(String(10))                # var / cuo / hon / oih / fac
