@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pandas as pd
 import streamlit as st
-from sqlalchemy import func
+from sqlalchemy import cast, func, String
 
 from db.models import (
     Alumno, Cuota, EstadoCuotaEnum, Inscripcion,
@@ -105,7 +105,7 @@ with get_session() as s:
     # ── Recaudación mensual ────────────────────────────────────────────────────
     recaud_rows = (
         s.query(
-            func.strftime("%Y-%m", Pago.fecha).label("mes"),
+            func.substr(cast(Pago.fecha, String), 1, 7).label("mes"),
             func.sum(Pago.monto).label("total"),
         )
         .group_by("mes")
