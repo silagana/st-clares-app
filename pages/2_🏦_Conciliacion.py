@@ -95,6 +95,12 @@ def _mov_rows(estados=None):
                     alumno_nombre = f"{al.apellido}, {al.nombre}"
                 except Exception:
                     pass
+            metodo_pago = "—"
+            if r.pagos:
+                try:
+                    metodo_pago = r.pagos[0].observaciones or "—"
+                except Exception:
+                    pass
             result.append({
                 "id": r.id,
                 "Fecha": fmt_fecha(r.fecha),
@@ -107,6 +113,7 @@ def _mov_rows(estados=None):
                 "Estado": r.estado.value,
                 "concepto_raw": r.concepto_raw or "",
                 "referencia": r.referencia_detectada or "—",
+                "metodo_conc": metodo_pago,
             })
         return result
 
@@ -416,16 +423,17 @@ with tab_ok:
         st.info("Sin movimientos conciliados aún.")
     else:
         st.caption(f"{len(movs_ok)} conciliados — ↩️ para revertir")
-        hc = st.columns([2, 3, 3, 2, 1])
-        for col, lbl in zip(hc, ["Fecha", "Pagador", "Alumno", "Monto", ""]):
+        hc = st.columns([2, 3, 3, 2, 2, 1])
+        for col, lbl in zip(hc, ["Fecha", "Pagador", "Alumno", "Monto", "Método", ""]):
             col.markdown(f"**{lbl}**")
         for m in movs_ok:
-            c1, c2, c3, c4, c5 = st.columns([2, 3, 3, 2, 1])
+            c1, c2, c3, c4, c5, c6 = st.columns([2, 3, 3, 2, 2, 1])
             c1.write(m["Fecha"])
             c2.write(m["Pagador"])
             c3.write(m["Alumno"])
             c4.write(m["Monto"])
-            if c5.button("↩️", key=f"rev_{m['id']}", help="Revertir conciliación"):
+            c5.write(m["metodo_conc"])
+            if c6.button("↩️", key=f"rev_{m['id']}", help="Revertir conciliación"):
                 with get_session() as s:
                     revertir_conciliacion(s, m["id"])
                 st.session_state.conc_msg = "Conciliación revertida."
