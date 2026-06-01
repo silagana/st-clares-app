@@ -119,6 +119,7 @@ class Alumno(Base):
     sede = relationship("Sede", back_populates="alumnos")
     inscripciones = relationship("Inscripcion", back_populates="alumno")
     referentes = relationship("ReferentePago", back_populates="alumno")
+    aliases_cobro = relationship("AliasCobroAlumno", back_populates="alumno")
 
 
 class ReferentePago(Base):
@@ -146,6 +147,8 @@ class Inscripcion(Base):
     descuento_porcentaje = Column(Numeric(5, 2))   # 10.00 = 10%
     descuento_fijo = Column(Numeric(14, 2))
     activa = Column(Boolean, nullable=False, default=True)
+    provisional = Column(Boolean, nullable=False, default=False)  # reserva de cupo año siguiente
+    anio_reserva = Column(Integer)  # año para el que se reserva el cupo
 
     alumno = relationship("Alumno", back_populates="inscripciones")
     curso = relationship("Curso", back_populates="inscripciones")
@@ -214,6 +217,17 @@ class Imputacion(Base):
 
     pago = relationship("Pago", back_populates="imputaciones")
     cuota = relationship("Cuota", back_populates="imputaciones")
+
+
+class AliasCobroAlumno(Base):
+    __tablename__ = "alias_cobro_alumno"
+
+    id = Column(Integer, primary_key=True)
+    alumno_id = Column(Integer, ForeignKey("alumno.id"), nullable=False)
+    alias = Column(String(160), nullable=False)
+    __table_args__ = (UniqueConstraint("alumno_id", "alias"),)
+
+    alumno = relationship("Alumno", back_populates="aliases_cobro")
 
 
 class PatronNoAlumno(Base):

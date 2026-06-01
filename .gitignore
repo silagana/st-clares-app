@@ -15,3 +15,14 @@ build/
 .pytest_cache/
 .coverage
 htmlcov/
+*.db
+*.xlsx
+*.pdf
+debug_*.py
+check_syntax.py
+test_pdf_parser.py
+reporte_matches.csv
+reporte_matches.py
+importar_pagos_historicos.py
+generar_manual.py
+.claude/settings.local.json

@@ -4,8 +4,10 @@ import streamlit as st
 from db.models import Sede
 from db.session import get_session
 from utils.audit import log_action
+from utils.auth import require_login
 
 st.set_page_config(page_title="Sedes", page_icon="🏢", layout="wide")
+require_login()
 st.title("🏢 Sedes")
 
 for k, v in [("sede_edit_id", None), ("sede_msg", None)]:
