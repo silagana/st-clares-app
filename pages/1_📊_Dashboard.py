@@ -130,7 +130,7 @@ with get_session() as s:
             Cuota.estado.in_([EstadoCuotaEnum.pendiente, EstadoCuotaEnum.parcial]),
             Inscripcion.activa == True,
         )
-        .group_by(Alumno.id)
+        .group_by(Alumno.id, Alumno.apellido, Alumno.nombre, Sede.nombre)
         .order_by(func.sum(Cuota.saldo_pendiente).desc())
         .limit(10)
         .all()

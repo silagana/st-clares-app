@@ -187,16 +187,23 @@ with st.expander("📋 Historial de pagos en efectivo"):
             .limit(50)
             .all()
         )
-        hist = [
-            {
+        hist = []
+        for p in pagos:
+            alumno_nombre = "—"
+            if p.imputaciones:
+                try:
+                    al = p.imputaciones[0].cuota.inscripcion.alumno
+                    alumno_nombre = f"{al.apellido}, {al.nombre}"
+                except Exception:
+                    pass
+            hist.append({
+                "Alumno": alumno_nombre,
                 "Fecha": fmt_fecha(p.fecha),
                 "Monto": fmt_moneda(p.monto),
                 "Operador": p.operador_efectivo or "—",
                 "Cuotas": len(p.imputaciones),
                 "Obs": (p.observaciones or "")[:40],
-            }
-            for p in pagos
-        ]
+            })
     if hist:
         st.dataframe(pd.DataFrame(hist), use_container_width=True, hide_index=True)
     else:
